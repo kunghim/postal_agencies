@@ -33,9 +33,10 @@ export interface FormData {
 
 interface FormProps {
   onSubmit: (data: FormData) => void;
+  onSubmitRaw?: (data: FormData) => void;
 }
 
-export default function Form({ onSubmit }: FormProps) {
+export default function Form({ onSubmit, onSubmitRaw }: FormProps) {
 
   const [formData, setFormData] = useState<FormData>({
     senderRole: '',
@@ -70,6 +71,11 @@ export default function Form({ onSubmit }: FormProps) {
     e.preventDefault();
     if (!formData.senderName || !formData.receiverName || !formData.content.trim()) return;
     onSubmit(formData);
+  };
+
+  const handleSubmitRaw = () => {
+    if (!formData.senderName || !formData.receiverName || !formData.content.trim()) return;
+    onSubmitRaw?.(formData);
   };
 
   const canSubmit = formData.senderName && formData.receiverName && formData.content.trim();
@@ -140,14 +146,16 @@ export default function Form({ onSubmit }: FormProps) {
 
       <div className={styles.divider}>信件内容</div>
 
-      <div className={styles.fieldWide}>
+      <div className={styles.textareaWrapper}>
         <textarea
           className={styles.textarea}
           rows={5}
+          maxLength={180}
           placeholder="在此写下你想说的话（白话即可）…"
           value={formData.content}
           onChange={e => handleChange('content', e.target.value)}
         />
+        <span className={styles.charCount}>{formData.content.length}/180</span>
       </div>
 
       <div className={styles.divider}>随信附寄</div>
@@ -162,13 +170,25 @@ export default function Form({ onSubmit }: FormProps) {
         />
       </div>
 
-      <button
-        className={`${styles.submit} ${canSubmit ? styles.submitActive : ''}`}
-        type="submit"
-        disabled={!canSubmit}
-      >
-        狄功代笔
-      </button>
+      <div className={styles.buttons}>
+        <button
+          className={`${styles.submit} ${canSubmit ? styles.submitActive : ''}`}
+          type="submit"
+          disabled={!canSubmit}
+        >
+          狄功代笔
+        </button>
+        {onSubmitRaw && (
+          <button
+            className={`${styles.submitSecondary} ${canSubmit ? styles.submitSecondaryActive : ''}`}
+            type="button"
+            disabled={!canSubmit}
+            onClick={handleSubmitRaw}
+          >
+            原文直书
+          </button>
+        )}
+      </div>
     </form>
   );
 }

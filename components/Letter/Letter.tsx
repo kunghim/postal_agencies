@@ -21,10 +21,10 @@ const ROLE_LABEL: Record<string, string> = {
   '姐': '贤姐', '妹': '贤妹',
 };
 
-const COL_CHARS = 18;
+const COL_CHARS = 23;
 const GRID_COLS = 10;
 const FONT_SIZE = 24;
-const LETTER_SPACING = 8;
+const LETTER_SPACING = 4;
 const DATE_SIZE = 16;
 const DATE_SPACING = 4;
 /** 日期字高度相对于正文字高度的比例 */
@@ -40,9 +40,9 @@ function numToChinese(n: number): string {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const yearStr = String(d.getFullYear()).split('').map(ch => '零一二三四五六七八九'[parseInt(ch)]).join('');
-  return `${yearStr}年${numToChinese(d.getMonth() + 1)}月${numToChinese(d.getDate())}日`;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const yearStr = String(y).split('').map(ch => '零一二三四五六七八九'[parseInt(ch)]).join('');
+  return `${yearStr}年${numToChinese(m)}月${numToChinese(d)}日`;
 }
 
 function splitColumns(text: string): string[] {

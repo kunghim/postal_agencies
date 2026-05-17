@@ -14,6 +14,8 @@ export default function Home() {
   const [letterData, setLetterData] = useState<LetterData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showSend, setShowSend] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const letterRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async (data: FormData) => {
@@ -41,7 +43,10 @@ export default function Home() {
         receiverRole: data.receiverRole,
         receiverName: data.receiverName,
         content: result.content,
-        date: new Date().toISOString().split('T')[0],
+        date: (() => {
+          const d = new Date();
+          return new Date(d.getTime() + 8 * 3600000).toISOString().split('T')[0];
+        })(),
       });
       setPage('result');
     } catch (err) {
@@ -50,8 +55,25 @@ export default function Home() {
     }
   };
 
+  const handleSubmitRaw = (data: FormData) => {
+    const d = new Date();
+    const beijingDate = new Date(d.getTime() + 8 * 3600000).toISOString().split('T')[0];
+
+    setLetterData({
+      senderRole: data.senderRole,
+      senderName: data.senderName,
+      receiverRole: data.receiverRole,
+      receiverName: data.receiverName,
+      content: data.content,
+      date: beijingDate,
+    });
+    setPage('result');
+  };
+
   const handleDownload = async () => {
-    if (!letterRef.current) return;
+    if (!letterRef.current || downloading || downloaded) return;
+    setDownloading(true);
+
     await document.fonts.ready;
     await new Promise(r => setTimeout(r, 200));
 
@@ -61,8 +83,11 @@ export default function Home() {
       link.download = '侨批书信.png';
       link.href = dataUrl;
       link.click();
+      setDownloaded(true);
     } catch (err) {
       console.error('下载失败:', err);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -70,13 +95,14 @@ export default function Home() {
     setPage('form');
     setLetterData(null);
     setError(null);
+    setDownloaded(false);
   };
 
   return (
     <main style={styles.main}>
       {page === 'form' && (
         <div style={styles.fadeIn}>
-          <Form onSubmit={handleSubmit} />
+          <Form onSubmit={handleSubmit} onSubmitRaw={handleSubmitRaw} />
         </div>
       )}
 
@@ -92,11 +118,18 @@ export default function Home() {
             <Letter data={letterData} />
           </div>
           <div style={styles.actions}>
-            <button style={styles.shipBtn} onClick={() => setShowSend(true)}>
+            {/* <button style={styles.shipBtn} onClick={() => setShowSend(true)}>
               漂洋过海
-            </button>
-            <button style={styles.downloadBtn} onClick={handleDownload}>
-              下载信件
+            </button> */}
+            <button
+              style={{
+                ...styles.downloadBtn,
+                ...(downloading || downloaded ? styles.btnDisabled : {}),
+              }}
+              onClick={handleDownload}
+              disabled={downloading || downloaded}
+            >
+              {downloading ? '生成中…' : downloaded ? '已下载' : '下载信件'}
             </button>
             <button style={styles.resetBtn} onClick={handleReset}>
               再写一封
@@ -182,5 +215,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Noto Serif TC', serif",
     fontSize: '16px',
     marginBottom: '16px',
+  },
+  btnDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
   },
 };
