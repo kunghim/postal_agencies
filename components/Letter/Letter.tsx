@@ -21,7 +21,7 @@ const ROLE_LABEL: Record<string, string> = {
   '姐': '贤姐', '妹': '贤妹',
 };
 
-const COL_CHARS = 23;
+const COL_CHARS = 24;
 const GRID_COLS = 10;
 const FONT_SIZE = 24;
 const LETTER_SPACING = 4;
@@ -45,11 +45,19 @@ function formatDate(dateStr: string): string {
   return `${yearStr}年${numToChinese(m)}月${numToChinese(d)}日`;
 }
 
+const PUNCT_RE = /^[，。、；：！？…""''《》（）—～·「」『』【】,.!?;:'")\]}>」』】〉》〕〗〙〛〉】〗〛]/;
+
 function splitColumns(text: string): string[] {
   const clean = text.replace(/\s+/g, '');
   const cols: string[] = [];
-  for (let i = 0; i < clean.length; i += COL_CHARS) {
-    cols.push(clean.slice(i, i + COL_CHARS));
+  let i = 0;
+  while (i < clean.length) {
+    let end = i + COL_CHARS;
+    if (end < clean.length && PUNCT_RE.test(clean[end])) {
+      end++; // 下一列开头是标点，挪到本列末尾
+    }
+    cols.push(clean.slice(i, Math.min(end, clean.length)));
+    i = end;
   }
   return cols;
 }

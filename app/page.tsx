@@ -118,9 +118,9 @@ export default function Home() {
             <Letter data={letterData} />
           </div>
           <div style={styles.actions}>
-            {/* <button style={styles.shipBtn} onClick={() => setShowSend(true)}>
+            <button style={styles.shipBtn} onClick={() => setShowSend(true)}>
               漂洋过海
-            </button> */}
+            </button>
             <button
               style={{
                 ...styles.downloadBtn,
